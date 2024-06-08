@@ -9,6 +9,18 @@ from dataset import TemplateDataset
 from model import Net
 
 
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--batch_size', '-b', type=int, default=64, help='batch size')
+    parser.add_argument('--lr', '-l', type=float, default=1e-4, help='learning rate')
+    parser.add_argument('--epochs', '-e', type=int, default=100, help='epochs to train')
+    parser.add_argument('--num_workers', '-w', type=int, default=4, help='how many dataloader workers')
+    parser.add_argument('--load', '-f', type=str, default=None, help='path to checkpoint')
+    parser.add_argument('--val', '-v', type=int, default=50, help='how many iterations to validate')
+    parser.add_argument('--save', '-s', type=int, default=200, help='how many iterations to save')
+    return parser.parse_args()
+
+
 def val(loader: DataLoader, model: nn.Module, device: torch.device):
     model.eval()
     with torch.no_grad():
@@ -25,15 +37,7 @@ def val(loader: DataLoader, model: nn.Module, device: torch.device):
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', '-b', type=int, default=64, help='batch size')
-    parser.add_argument('--lr', '-l', type=float, default=1e-4, help='learning rate')
-    parser.add_argument('--epochs', '-e', type=int, default=100, help='epochs to train')
-    parser.add_argument('--num_workers', '-w', type=int, default=4, help='how many dataloader workers')
-    parser.add_argument('--load', '-f', type=str, default=None, help='path to checkpoint')
-    parser.add_argument('--val', '-v', type=int, default=50, help='how many iterations to validate')
-    parser.add_argument('--save', '-s', type=int, default=200, help='how many iterations to save')
-    args = parser.parse_args()
+    args = parse_arguments()
     print(f'Arguments: {args.__dict__}')
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
