@@ -1,11 +1,15 @@
 import torch
 import torch.nn as nn
+import torch.optim as optim
 import torch.nn.functional as F
 
 
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
+        self.optimizer = optim.Adam(self.parameters(), lr=1e-3)
+        self.iterations = 0
+
         self.conv1 = nn.Sequential(
             nn.Conv2d(3, 4, 3, 2, 1),
             nn.ReLU(inplace=True)

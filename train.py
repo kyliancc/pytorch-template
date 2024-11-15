@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
 from torch.utils.data import DataLoader
 
 import argparse
@@ -51,14 +50,12 @@ def main():
     model = Net()
     model.to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=args.lr)
-    iterations = 0
 
     if args.load:
         state_dict = torch.load(args.load)
-        iterations = state_dict['iterations']
+        model.iterations = state_dict['iterations']
         model.load_state_dict(state_dict['model'])
-        optimizer.load_state_dict(state_dict['optimizer'])
+        model.optimizer.load_state_dict(state_dict['optimizer'])
         print(f'Loaded checkpoint from {args.load}.')
 
     print('START TRAINING')
@@ -68,35 +65,35 @@ def main():
             model.train()
             x, y = x.to(device), y.to(device)
 
-            optimizer.zero_grad()
+            model.optimizer.zero_grad()
 
             pred = model(x)
             loss = criterion(pred, y)
             loss.backward()
 
-            optimizer.step()
+            model.optimizer.step()
 
-            print(f'Iteration {iterations} finished with loss: {loss.item()}')
-            iterations += 1
+            print(f'Iteration {model.iterations} finished with loss: {loss.item()}')
+            model.iterations += 1
 
             accuracy = None
-            if iterations % args.val == 0:
+            if model.iterations % args.val == 0:
                 accuracy = val(val_loader, model, device)
                 print(f'Validation finished with accuracy: {accuracy:.2%}')
 
-            if iterations % args.save == 0:
+            if model.iterations % args.save == 0:
                 if accuracy is None:
                     accuracy = val(val_loader, model, device)
                     print(f'Validation finished with accuracy: {accuracy:.2%}')
 
                 state_dict = {
-                    'iterations': iterations,
+                    'iterations': model.iterations,
                     'model': model.state_dict(),
-                    'optimizer': optimizer.state_dict(),
+                    'optimizer': model.optimizer.state_dict(),
                     'accuracy': accuracy
                 }
-                torch.save(state_dict, f'./checkpoints/template-net-{iterations}.pth')
-                print(f'Checkpoint saved to ./checkpoints/template-net-{iterations}.pth')
+                torch.save(state_dict, f'./checkpoints/template-net-{model.iterations}.pth')
+                print(f'Checkpoint saved to ./checkpoints/template-net-{model.iterations}.pth')
 
 
 if __name__ == '__main__':
